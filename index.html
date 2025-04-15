@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nokia Keypad Converter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+    <h1 class="text-2xl font-bold mb-4 text-center">Nokia Keypad Converter</h1>
+    <div class="mb-4">
+      <label for="inputText" class="block text-gray-700 font-semibold mb-2">Input</label>
+      <textarea id="inputText" rows="3" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter numbers or letters"></textarea>
+    </div>
+    <div class="mb-4 flex justify-center space-x-4">
+      <button id="toLettersBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Numbers to Letters</button>
+      <button id="toNumbersBtn" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition">Letters to Numbers</button>
+    </div>
+    <div>
+      <label for="outputText" class="block text-gray-700 font-semibold mb-2">Output</label>
+      <textarea id="outputText" rows="3" readonly class="w-full p-2 border border-gray-300 rounded bg-gray-50"></textarea>
+    </div>
+  </div>
+
+  <script>
+    // Mapping for old Nokia keypad
+    const numberToLettersMap = {
+      '2': ['a', 'b', 'c'],
+      '3': ['d', 'e', 'f'],
+      '4': ['g', 'h', 'i'],
+      '5': ['j', 'k', 'l'],
+      '6': ['m', 'n', 'o'],
+      '7': ['p', 'q', 'r', 's'],
+      '8': ['t', 'u', 'v'],
+      '9': ['w', 'x', 'y', 'z'],
+      '0': [' ']
+    };
+
+    // Reverse map for letters to numbers
+    const letterToNumberMap = {};
+    for (const [num, letters] of Object.entries(numberToLettersMap)) {
+      letters.forEach((letter, index) => {
+        letterToNumberMap[letter] = num.repeat(index + 1);
+      });
+    }
+
+    const inputText = document.getElementById('inputText');
+    const outputText = document.getElementById('outputText');
+    const toLettersBtn = document.getElementById('toLettersBtn');
+    const toNumbersBtn = document.getElementById('toNumbersBtn');
+
+    // Convert numbers to letters (assuming input like 2, 22, 222 for a,b,c)
+    function numbersToLetters(input) {
+      // Split input by spaces or non-digit characters to get groups
+      const groups = input.match(/(\d)\1*/g) || [];
+      let result = '';
+      groups.forEach(group => {
+        const digit = group[0];
+        const count = group.length;
+        const letters = numberToLettersMap[digit];
+        if (letters) {
+          // Use modulo to cycle through letters if count > letters.length
+          const letter = letters[(count - 1) % letters.length];
+          result += letter;
+        } else {
+          result += group; // if no mapping, keep as is
+        }
+      });
+      return result;
+    }
+
+    // Convert letters to numbers
+    function lettersToNumbers(input) {
+      let result = '';
+      for (const char of input.toLowerCase()) {
+        if (letterToNumberMap[char]) {
+          result += letterToNumberMap[char] + ' ';
+        } else {
+          result += char; // keep unknown chars as is
+        }
+      }
+      return result.trim();
+    }
+
+    toLettersBtn.addEventListener('click', () => {
+      const input = inputText.value.trim();
+      const converted = numbersToLetters(input);
+      outputText.value = converted;
+      toLettersBtn.classList.add('bg-blue-600', 'text-white');
+      toLettersBtn.classList.remove('bg-gray-300', 'text-gray-700');
+      toNumbersBtn.classList.remove('bg-blue-600', 'text-white');
+      toNumbersBtn.classList.add('bg-gray-300', 'text-gray-700');
+    });
+
+    toNumbersBtn.addEventListener('click', () => {
+      const input = inputText.value.trim();
+      const converted = lettersToNumbers(input);
+      outputText.value = converted;
+      toNumbersBtn.classList.add('bg-blue-600', 'text-white');
+      toNumbersBtn.classList.remove('bg-gray-300', 'text-gray-700');
+      toLettersBtn.classList.remove('bg-blue-600', 'text-white');
+      toLettersBtn.classList.add('bg-gray-300', 'text-gray-700');
+    });
+
+    // Default mode is numbers to letters
+    toLettersBtn.click();
+  </script>
+</body>
+</html>
